@@ -4,17 +4,14 @@ import com.example.demobook.security.domain.AuthenticationRequest;
 import com.example.demobook.user.application.UserService;
 import com.example.demobook.user.domain.User;
 import com.example.demobook.user.presentation.vo.UserVo;
-import com.example.demobook.security.application.LoginUserDetails;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -62,7 +59,8 @@ public class UserRestController {
      * @throws Exception
      */
     @PostMapping("login")
-    public ResponseEntity<Boolean> login(@RequestBody AuthenticationRequest data, HttpSession session,
+    public ResponseEntity<Boolean> login(@RequestBody AuthenticationRequest data,
+                                         HttpSession session,
                                          HttpServletRequest request) throws Exception {
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
                 data.getUsername(), data.getPassword());

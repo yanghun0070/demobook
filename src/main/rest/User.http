@@ -1,16 +1,17 @@
 #회원 가입
-POST http://localhost:8080/user/join
+POST http://localhost:8080/api/user/join
 Content-Type: application/json
 
 {
     "userId": "test",
-    "password": "test"
+    "password": "test",
+    "confirmPassword" :  "test"
 }
 
 ###
 
 #로그인
-POST http://localhost:8080/user/login
+POST http://localhost:8080/api/user/login
 Content-Type: application/json
 
 {
@@ -19,3 +20,21 @@ Content-Type: application/json
 }
 
 ###
+
+#인증 로그인
+POST http://localhost:8080/api/auth/signin
+Content-Type: application/json
+
+{
+"username": "test",
+"password": "test"
+}
+
+###
+
+#인증 로그인 했을 시의  Token 값 사용
+GET http://localhost:8080/api/auth/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0Iiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sImlhdCI6MTU3NzUxNzQyNSwiZXhwIjoxNTc3NTIxMDI1fQ.67cSTbSw6RWzJV2svP2r-81jKSYtDhoF05KB6rCOads
+
+###
+

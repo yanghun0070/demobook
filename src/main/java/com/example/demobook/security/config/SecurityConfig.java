@@ -3,7 +3,6 @@ package com.example.demobook.security.config;
 import com.example.demobook.security.application.LoginUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.GlobalAuthenticationConfigurerAdapter;
@@ -15,21 +14,25 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.session.SessionManagementFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-
-import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    private JwtTokenProvider jwtTokenProvider;
+
+    public SecurityConfig(JwtTokenProvider jwtTokenProvider) {
+        this.jwtTokenProvider = jwtTokenProvider;
+    }
+
+    @Bean
+    public JwtTokenFilter authenticationTokenFilterBean() {
+        return new JwtTokenFilter(jwtTokenProvider);
+    }
 
     /**
      * Security 설정 값 무시
@@ -47,24 +50,25 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      * @throws Exception
      */
     protected void configure(HttpSecurity http) throws Exception {
+
         http.headers()
                 .frameOptions().sameOrigin()
                 .httpStrictTransportSecurity().disable();
 
         http
+                .cors().and()
                 .csrf().disable()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.NEVER)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/user/join", "/user/login",
-                        "/api/**").permitAll()
+                .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
+                .antMatchers("/api/user/join", "/api/user/login", "/api/auth/signin").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .formLogin().loginPage("/user/login").permitAll()
+                .httpBasic()
                 .and()
-                .logout().permitAll();
-
+                .apply(new JwtConfigurer(jwtTokenProvider));
     }
 
 
@@ -102,8 +106,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             auth.userDetailsService(userDetailsService)
                     .passwordEncoder(passwordEncoder());
         }
+    }
 
-
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOrigin("*");
+        configuration.addAllowedMethod("*");
+        configuration.addAllowedHeader("*");
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
 }

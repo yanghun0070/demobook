@@ -7,6 +7,8 @@ import com.example.demobook.book.infra.api.KaKaoUrlConnection;
 import com.example.demobook.book.infra.api.NaverUrlConnection;
 import com.example.demobook.common.PagedResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 
@@ -32,6 +34,7 @@ public class BookHttpApiClient implements BookRepository {
      * @return
      * @throws IOException
      */
+    @Cacheable(value="LocalCacheData", key="'KeyIs' + #keyword + #currentPage")
     @Override
     public PagedResult<BookDetail> findByKeyword(String keyword, Integer currentPage) throws IOException {
         URL url = null;
